@@ -121,7 +121,7 @@ server <- function(input, output) {
       stand_pca_data=stand_pca_data%*%diag(1/pca_components[['standard_deviation']])
       
       #The format for calculation covariance matrix here is A*A^T
-      #As the dataframe has m = 150 rows n = 4 columns so if we take A^T*A the resultant matrix will be 150*150 so we take A*A^T which gives us 4*4 matrix  
+      #As the dataframe has m = 400 rows n = 40 columns so if we take A^T*A the resultant matrix will be 400*400 so we take A*A^T which gives us 40*40 matrix  
       eigen_cov=eigen(crossprod(stand_pca_data,stand_pca_data))
       
       pca_components[['eigen_values']] <- eigen_cov$values
@@ -215,7 +215,7 @@ server <- function(input, output) {
       return(stand_pca_data%*%pca_components[['fin_transform']])
     }
     
-    projected <- predict.pca_calculation(pca1,as.matrix(data_pca[,input$startno:input$endno]))
+    pca_projection <- predict.pca_calculation(pca1,as.matrix(data_pca[,input$startno:input$endno]))
     
     xlabel <- paste0('PC1 with variance contribution of : ',pca1[['variance_contribution']][1])
     
@@ -223,7 +223,7 @@ server <- function(input, output) {
     
     color_val <- as.integer(input$class_label)
     
-    ggplot(data = data_pca)+geom_point(aes(x=-projected[,1],y=projected[,2],color = data_pca[,as.numeric(input$class_label)]))+xlab(xlabel)+ylab(ylabel)+ggtitle('Dataset projected on the main Principal Components')
+    ggplot(data = data_pca)+geom_point(aes(x=-pca_projection[,1],y=pca_projection[,2],color = data_pca[,color_val]))+xlab(xlabel)+ylab(ylabel)+ggtitle('Dataset projected on the main Principal Components')
     
   })
   
@@ -240,7 +240,9 @@ server <- function(input, output) {
     
     ylabel <- paste0('PC2 with variance contribution of : ',pca1[['variance_contribution']][2])
     
-    ggplot(data = data_pca)+geom_point(aes(x=pca_final[,1],y=pca_final[,2],color= data_pca[,as.numeric(input$class_label)]))+xlab(xlabel)+ylab(ylabel)+ggtitle('Dataset projected on the main Principal Components')
+    color_val <- as.integer(input$class_label)
+    
+    ggplot(data = data_pca)+geom_point(aes(x=pca_final[,1],y=pca_final[,2],color= data_pca[,color_val]))+xlab(xlabel)+ylab(ylabel)+ggtitle('Dataset projected on the main Principal Components')
   })
   
   output$pc <- renderTable({
@@ -306,14 +308,16 @@ server <- function(input, output) {
     pca1[['fin_transform']]
   })
   
-  image_dataframe <- reactive({
-    image_data_frame <- read.csv("C://Users//dhruv//Documents//PCA-Eigen Faces//PCA-EigenFaces//face_data.csv",header = F) %>% as.matrix()
-    image_data_frame  
+  image.dataframe <- reactive({
+    image.data <- read.csv("C://Users//dhruv//Documents//PCA-Eigen//PCA-EigenFaces//face_data.csv",header = F) %>% as.matrix()
+    
+    image.data
   })
   
   output$faceplot1 <- renderPlot({
+    df_new <- data.frame()
     # Read the pixel data for face from the csv file
-    image_data <- image_dataframe()
+    image_data <- image.dataframe()
     
     # Function to plot image data
       
@@ -358,8 +362,10 @@ server <- function(input, output) {
   }, height = 500, width = 500)
   
   output$faceplot2 <- renderPlot({
+    df_new <- data.frame()
+    
     # Read the pixel data for face from the csv file
-    image_data <- read.csv("C://Users//dhruv//Documents//PCA-Eigen Faces//PCA-EigenFaces//face_data.csv",header = F) %>% as.matrix()
+    image_data <- image.dataframe()
     
     # Function to plot image data
     image_plot <- function(x){ image(x, col=grey(seq(0, 1, length=256)))}
@@ -381,14 +387,16 @@ server <- function(input, output) {
     # Store the newly obtained data in a dataframe
     df_straight_image =as.data.frame(df_new)
     
+    data_matrix <- data.matrix(df_straight_image)
+    
     # Scale the data to standardize and normalize it to values between (0,1)
-    scaled_data_new <- scale(data.matrix(df_straight_image))
+    scaled_data_new <- scale(data_matrix)
     
     # Use the A^T*A format to calculate the covariance matrix
-    cov_mat <- t(D) %*% D / (nrow(D)-1)
+    cov_mat <- t(scaled_data_new) %*% scaled_data_new / (nrow(scaled_data_new)-1)
     
     #Calculate the eigen values and vectors of the resultant covariance matrix    
-    eigs <- eigs(cov_mat, 40, which = "LM")
+    eigs <- Rspectra::eigs(cov_mat, 40, which = "LM")
     
     # Eigenvalues gives us the weight associated with each of the eigen faces
     eigenvalues <- eigs$values
@@ -407,8 +415,10 @@ server <- function(input, output) {
   }, height = 500, width = 500)
   
   output$faceplot3 <- renderPlot({
+    df_new <- data.frame()
+    
     # Read the pixel data for face from the csv file
-    image_data <- read.csv("C://Users//dhruv//Documents//PCA-Eigen Faces//PCA-EigenFaces//face_data.csv",header = F) %>% as.matrix()
+    image_data <- image.dataframe()
     
     # Function to plot image data
     image_plot <- function(x){ image(x, col=grey(seq(0, 1, length=256)))}
@@ -433,14 +443,16 @@ server <- function(input, output) {
     average_face=colMeans(df_straight_image)
     AVF=matrix(average_face,nrow=1,byrow=T)
     
+    data_matrix <- data.matrix(df_straight_image)
+    
     # Scale the data to standardize and normalize it to values between (0,1)
-    scaled_data_new <- scale(data.matrix(df_straight_image))
+    scaled_data_new <- scale(data_matrix)
     
     # Use the A^T*A format to calculate the covariance matrix
-    cov_mat <- t(D) %*% D / (nrow(D)-1)
+    cov_mat <- t(scaled_data_new) %*% scaled_data_new / (nrow(scaled_data_new)-1)
     
     #Calculate the eigen values and vectors of the resultant covariance matrix    
-    eigs <- eigs(cov_mat, 40, which = "LM")
+    eigs <- Rspectra::eigs(cov_mat, 40, which = "LM")
     
     # Eigenvalues gives us the weight associated with each of the eigen faces
     eigenvalues <- eigs$values

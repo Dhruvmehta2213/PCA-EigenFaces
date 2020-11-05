@@ -3,7 +3,9 @@ Steps to execute the code:
 2) Open the Dashboard.R file
 3) Dependencies required: shiny, shinydashboard, ggplot2, dplyr, RSpectra
 4) For running the PCA on a dataset download the data.csv file provided in the github link and select that file as an input
-4) In the image_dataframe function change the file path of the read.csv method to the file location of face_data.csv file
+4) In the image.dataframe function change the file path of the read.csv method to the file location of face_data.csv file
 5) Run the Dashboard.R file.
 
 Github Repo : https://github.com/Dhruvmehta2213/PCA-EigenFaces
+
+Youtube Video : 
