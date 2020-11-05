@@ -8,4 +8,4 @@ Steps to execute the code:
 
 Github Repo : https://github.com/Dhruvmehta2213/PCA-EigenFaces
 
-Youtube Video : 
+Youtube Video : https://youtu.be/XGxCgtXRq3w
